@@ -67,12 +67,12 @@ struct Cest {
 
 #define CSI "\033["
 #define SGR "m"
-static const struct { char red[6]; char green[6]; char yellow[6]; char reset[6]; }
+static const struct { char failure[6]; char success[6]; char pending[6]; char reset[6]; }
 ANSIEscapes = {
-  .red    = CSI "31" SGR,
-  .green  = CSI "32" SGR,
-  .yellow = CSI "33" SGR,
-  .reset  = CSI "0"  SGR
+  .failure    = CSI "31" SGR,
+  .success    = CSI "32" SGR,
+  .pending    = CSI "33" SGR,
+  .reset      = CSI "0"  SGR
 };
 
 
@@ -122,12 +122,12 @@ int Cest__run_all(void) {
     if (return_value - 1) { pends++; }
     
     printf("%s->%s%s%s()\n", current->namespace,
-      return_value ? (return_value - 1 ? ANSIEscapes.yellow : ANSIEscapes.green) : ANSIEscapes.red,
+      return_value ? (return_value - 1 ? ANSIEscapes.pending : ANSIEscapes.success) : ANSIEscapes.failure,
       current->name, ANSIEscapes.reset);
   }
   
   printf("%s%d successes%s (of %d)\n",
-    successes < total ? ANSIEscapes.red : (pends ? ANSIEscapes.yellow : ANSIEscapes.green),
+    successes < total ? ANSIEscapes.failure : (pends ? ANSIEscapes.pending : ANSIEscapes.success),
     successes, ANSIEscapes.reset, total);
   
   return total - successes;
