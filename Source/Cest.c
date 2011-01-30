@@ -95,7 +95,7 @@ struct Cest Cest = {
 void Cest__enroll(cest a_cest) {    struct cest_node this_node = { .cest = a_cest, .next = NULL },
                                                     *current = NULL, *this;
   
-         this     = malloc(sizeof(struct cest_node));        // LEAK: Moar!
+         this     = malloc(sizeof(struct cest_node));
   memcpy(this, &this_node, sizeof(struct cest_node));
   
   if (Cest.first == NULL)
@@ -129,7 +129,6 @@ return total - successes; }
 
 cest Cest__create(char namespace[], char name[], cest_state (*function)(void)) {    cest this;
   
-  /* LEAK: All up in yo’ beeswax, leakin’ like a sieve! \m/ ^.^ \m/ */
   this = malloc(sizeof(struct cest));
   
          this->function     = function;
