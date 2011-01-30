@@ -16,17 +16,17 @@
 #define SUCCEED return success//;
 #define PEND    return pending//;
 
-        struct cest;
-typedef struct cest* cest;
-        struct cest_node;
-typedef struct cest_node* cest_node;
+          struct cest;
+typedef   struct cest*   cest;
+          struct cest_node;
+typedef   struct cest_node*   cest_node;
 
 typedef enum cest_state { failure, success, pending } cest_state;
 
 struct cest {
-  cest_state    (*function)(void);
-  char          namespace[32];
-  char          name[216]; /* `256 - 32 - "__test__".length == 216` */
+  cest_state   (* function)( void );
+  char            namespace[32];
+  char            name[216]; /* `256 - 32 - "__test__".length == 216` */
 };
 
 /* For now, we implement a shitty global linked-list of tests to run. Not my
@@ -39,12 +39,12 @@ struct cest_node {
 
 struct Cest {
   /* `Cest` functions */
-  void          (*enroll)     ( cest );
-  int           (*run_all)    ( void );
-  cest          (*create)     ( char[], char[], cest_state (*)(void) );
+  void         (* enroll)     ( cest );
+  int          (* run_all)    ( void );
+  cest         (* create)     ( char[], char[], cest_state (*)(void) );
   
   /* `struct cest` methods */
-  cest_state    (*execute)    ( cest );
+  cest_state   (* execute)    ( cest );
   
   /* Data elements */
   cest_node       first;
@@ -93,9 +93,9 @@ struct Cest Cest = {
 };
 
 void Cest__enroll(cest a_cest) {
-  struct cest_node   *current = NULL;
-  struct cest_node    this_node = { .cest = a_cest, .next = NULL };
-  struct cest_node   *this = malloc(sizeof(struct cest_node));        // LEAK: Moar!
+  struct cest_node    * current = NULL;
+  struct cest_node      this_node = { .cest = a_cest, .next = NULL };
+  struct cest_node    * this = malloc(sizeof(struct cest_node));        // LEAK: Moar!
   memcpy(this, &this_node, sizeof(struct cest_node));
   
   if (Cest.first == NULL)
@@ -112,8 +112,8 @@ void Cest__enroll(cest a_cest) {
 int Cest__run_all(void) {
   cest_state return_value; int total, successes, pends;
   
-  cest                current;
-  struct cest_node   *current_node = Cest.first;
+  cest                  current;
+  struct cest_node    * current_node = Cest.first;
   
   for (total = 0, successes = 0, pends = 0; current_node != NULL; total++, current_node = current_node->next) {
     current = current_node->cest;
