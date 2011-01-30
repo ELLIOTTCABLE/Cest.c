@@ -63,7 +63,7 @@ struct Cest {
 
 /* A safer `strcpy()`, using `strncpy()` and `sizeof()` */
 #define STRCPY(TO, FROM) \
-  strncpy(TO, FROM, sizeof(TO)); TO[sizeof(TO) - 1] = '\0'
+  strncpy(TO, FROM, sizeof(TO)); TO[sizeof(TO) - 1] = '\0'//;
 
 #define CSI "\033["
 #define SGR "m"
