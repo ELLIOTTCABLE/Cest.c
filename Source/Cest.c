@@ -1,52 +1,110 @@
+/*  `Cest` is a very dirty ‘testing’ library for ISO C. Nothing fancy, simply a collection of preprocessor macros
+ *  and a miniscule bit of code to sequentially run your tests.
+ *  
+ *  Running `Cest`s boils down to statically building your .test.c files against Cest.c, and then executing the
+ *  resulting binary. For instance:
+ *      
+ *      C -O0 -std=c99 -pedantic-errors -Wall Source/Cest.c \
+ *        Source/Paws.c/Types/list/ll.tests.c \
+ *        Source/Paws.c/Types/list/list.tests.c && \
+ *      ./list.tests.o
+ *  
+ *  Writing test files using `Cest` is very simple; simply include the `Cest.c` declarations …
+ *      
+ *      #include "MYCODE.c"
+ *      
+ *      #define DECLARATIONS
+ *      # include "Cest.c"
+ *      
+ *      # include <string.h>
+ *      #undef  DECLARATIONS
+ *      
+ *  … and then declare `CEST()`s using the macro thusly:
+ *      
+ *      CEST(LL, allocate) {
+ *        
+ *        ASSERT(something);
+ *        
+ *      SUCCEED; }
+ *      
+ *  Ensure that you always finish a `CEST()` with the `SUCCEED;` statement. This ensures your test is marked as
+ *  passing if none of the `ASSERT()`ions `FAIL`.
+ */
+
 #if !defined(CEST_DECLARED)
 # define     CEST_DECLARED
 
 #define constructor __attribute__((constructor))
+
+/*  This is the core `CEST()` macro that you utilize to declare new `CEST()`s. It expects a name for the test,
+ *  split into a NAMESPACE (32 characters, think module name) and NAME (216 characters, think test description.)
+ *  
+ *  Make sure to end your `CEST()` blocks with a `SUCCEED;` statement!
+ */
 #define CEST(NAMESPACE, NAME) \
   static cest_state NAMESPACE ## __test__ ## NAME(); \
   static /* inline */ constructor void Cest_registrar_for__ ## NAMESPACE ## __test__ ## NAME() { \
     Cest.enroll(Cest.create(#NAMESPACE, #NAME, NAMESPACE ## __test__ ## NAME)); } \
   cest_state NAMESPACE ## __test__ ## NAME() //{ … }
 
+/*  This simple macro causes a test to `FAIL` if the passed expression returns `false`. */
 #define ASSERT(FACT) \
   if (!(FACT)) \
     FAIL//;
-
-#define FAIL    return failure//;
-#define SUCCEED return success//;
-#define PEND    return pending//;
 
           struct cest;
 typedef   struct cest*   cest;
           struct cest_node;
 typedef   struct cest_node*   cest_node;
 
+#define FAIL    return failure//;
+#define SUCCEED return success//;
+#define PEND    return pending//;
+
 typedef enum cest_state { failure, success, pending } cest_state;
 
+/*  This is the datatype utilized to store your `CEST()`s at runtime. It simply wraps a function-pointer to your
+ *  `CEST()` in with the `CEST()`’s name. */
 struct cest {
   cest_state   (* function)( void );
   char            namespace[32];
   char            name[216]; /* `256 - 32 - "__test__".length == 216` */
 };
 
-/* For now, we implement a shitty global linked-list of tests to run. Not my
- * favourite implementation, but it will serve for the moment.
- */
+// For now, we implement a shitty global linked-list of tests to run. Not my
+// favourite implementation, but it will serve for the moment.
 struct cest_node {
   cest        cest;
   cest_node   next;
 };
 
+/*  `Cest` is the runtime ‘family’ object to interface with this `Cest.c` library. Every `Cest.c` function must
+ *  be called through `Cest->...`, including family functions and data functions.
+ *  
+ *  This also stores the root of the linked-list `CEST()` storage (`>first`).
+ */
 struct Cest {
-  /* `Cest` functions */
-  void         (* enroll)     ( cest );
+  // ==== `Cest` family functions
+  /*  `>run_all()`  simply climbs through the record of enrolled `CEST()`s, executing each set of tests. It
+   *  prints colorized status information to standard-out as it runs, and returns the number of failed tests
+   *  (with 0 indicating success of all tests, testable with `!()`). */
   int          (* run_all)    ( void );
-  cest         (* create)     ( char[], char[], cest_state (*)(void) );
   
-  /* `struct cest` methods */
+  /*  `>create(namespace, name, &function)` returns a heap pointer to a new `struct cest`, initialized with
+   *  copies of the parameters you provide. */
+  cest         (* create)     ( char namespace[], char name[], cest_state (*function)(void) );
+  
+  // ==== `struct cest` data functions
+  /*  `>enroll(cest)` takes a pointer to a `struct cest` and enrolls it in the queue to be executed by
+   *  `>run_all()`. */
+  void         (* enroll)     ( cest );
+  /*  `>execute(cest)` is simply a shortcut to `(cest->function)()`. It causes the underlying function pointer to
+   *  be dereferenced and executed. */
   cest_state   (* execute)    ( cest );
   
-  /* Data elements */
+  // ==== Data members
+  /*  The `struct cest_node` pointed to by `>first` will be the first `CEST()` to be executed when `>run_all()`
+   *  gets called. */
   cest_node       first;
 } extern Cest;
 
@@ -76,37 +134,21 @@ ANSIEscapes = {
 };
 
 
-void          Cest__enroll    (cest);
 int           Cest__run_all   (void);
 cest          Cest__create    (char[], char[], cest_state (*)(void));
 
+void          Cest__enroll    (cest);
 cest_state    cest__execute   (cest);
 
 struct Cest Cest = {
-  .enroll     = Cest__enroll,
   .run_all    = Cest__run_all,
   .create     = Cest__create,
   
+  .enroll     = Cest__enroll,
   .execute    = cest__execute,
   
   .first      = NULL
 };
-
-void Cest__enroll(cest a_cest) {    struct cest_node this_node = { .cest = a_cest, .next = NULL },
-                                                    *current = NULL, *this;
-  
-         this     = malloc(sizeof(struct cest_node));
-  memcpy(this, &this_node, sizeof(struct cest_node));
-  
-  if (Cest.first == NULL)
-    Cest.first = this;
-  else {
-    current = Cest.first;
-    while (current->next != NULL)
-      current = current->next;
-    current->next = this; }
-  
-return; }
 
 int Cest__run_all(void) {   int total, successes, pends; cest_state return_value; cest current;
                             struct cest_node *current_node = Cest.first;
@@ -137,8 +179,30 @@ cest Cest__create(char namespace[], char name[], cest_state (*function)(void)) {
   
 return this; }
 
+void Cest__enroll(cest a_cest) {    struct cest_node this_node = { .cest = a_cest, .next = NULL },
+                                                    *current = NULL, *this;
+  
+         this     = malloc(sizeof(struct cest_node));
+  memcpy(this, &this_node, sizeof(struct cest_node));
+  
+  if (Cest.first == NULL)
+    Cest.first = this;
+  else {
+    current = Cest.first;
+    while (current->next != NULL)
+      current = current->next;
+    current->next = this; }
+  
+return; }
+
 cest_state cest__execute(cest this) { return this->function(); }
 
-int main() { return Cest.run_all(); }
+
+#if !defined(CEST__NO_AUTO)
+  /*  This is compiled into every tests-executable, unless `CEST__NO_AUTO` is defined at the point that `Cest.c`
+   *  is included. It simply executes `Cest->run_all()` and applies the number of failed tests (if any) as the
+   *  exit value of the program. */
+  int main() { return Cest.run_all(); }
+#endif
 
 #endif
