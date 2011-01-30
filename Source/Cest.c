@@ -104,10 +104,9 @@ void Cest__enroll(cest a_cest) {    struct cest_node this_node = { .cest = a_ces
     current = Cest.first;
     while (current->next != NULL)
       current = current->next;
-    
-    current->next = this;
-  }
-}
+    current->next = this; }
+  
+return; }
 
 int Cest__run_all(void) {   int total, successes, pends; cest_state return_value; cest current;
                             struct cest_node *current_node = Cest.first;
@@ -120,15 +119,13 @@ int Cest__run_all(void) {   int total, successes, pends; cest_state return_value
     
     printf("%s->%s%s%s()\n", current->namespace,
       return_value ? (return_value - 1 ? ANSIEscapes.pending : ANSIEscapes.success) : ANSIEscapes.failure,
-      current->name, ANSIEscapes.reset);
-  }
+      current->name, ANSIEscapes.reset); }
   
   printf("%s%d successes%s (of %d)\n",
     successes < total ? ANSIEscapes.failure : (pends ? ANSIEscapes.pending : ANSIEscapes.success),
     successes, ANSIEscapes.reset, total);
   
-  return total - successes;
-}
+return total - successes; }
 
 cest Cest__create(char namespace[], char name[], cest_state (*function)(void)) {    cest this;
   
@@ -139,8 +136,7 @@ cest Cest__create(char namespace[], char name[], cest_state (*function)(void)) {
   STRCPY(this->namespace    , namespace);
   STRCPY(this->name         , name);
   
-  return this;
-}
+return this; }
 
 cest_state cest__execute(cest this) { return this->function(); }
 
