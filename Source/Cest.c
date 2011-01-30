@@ -1,5 +1,5 @@
-#if !defined(CEST_DECLARATIONS)
-# define     CEST_DECLARATIONS
+#if !defined(CEST_DECLARED)
+# define     CEST_DECLARED
 
 #define constructor __attribute__((constructor))
 #define CEST(NAMESPACE, NAME) \
@@ -53,13 +53,13 @@ struct Cest {
 
 
 #endif
-#if !defined(DECLARATIONS) && !defined(CEST_IMPLEMENTATION) /* ========================================== BODY */
-# define                               CEST_IMPLEMENTATION
-# define DECLARATIONS
+#if !defined(DECLARATIONS_PLEASE) && !defined(CEST_IMPLEMENTED) /* ====================================== BODY */
+# define                                      CEST_IMPLEMENTED
+# define DECLARATIONS_PLEASE
 #   include <stdlib.h>
 #   include <stdio.h>
 #   include <string.h>
-# undef  DECLARATIONS
+# undef  DECLARATIONS_PLEASE
 
 /* A safer `strcpy()`, using `strncpy()` and `sizeof()` */
 #define STRCPY(TO, FROM) \
