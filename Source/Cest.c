@@ -2,7 +2,8 @@
  *  and a miniscule bit of code to sequentially run your tests.
  *  
  *  Running `Cest`s boils down to statically building your .test.c files against Cest.c, and then executing the
- *  resulting binary. For instance:
+ *  resulting binary. As an (non-functional in this project, due to Paws conventions explained in the README)
+ *  example, you might run something like:
  *      
  *      C -O0 -std=c99 -pedantic-errors -Wall Source/Cest.c \
  *        Source/Paws.c/Types/list/ll.tests.c \
