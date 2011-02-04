@@ -1,7 +1,10 @@
-/*  `Cest` is a very dirty ‘testing’ library for ISO C. Nothing fancy, simply a collection of preprocessor macros
+/*  `Cest.c`
+ *  ========
+ *  `Cest` is a very dirty ‘testing’ library for ISO C. Nothing fancy, simply a collection of preprocessor macros
  *  and a miniscule bit of code to sequentially run your tests.
  *  
- *  Running `Cest`s boils down to statically building your .test.c files against Cest.c, and then executing the
+ *  ### Running
+ *  Running `CEST()`s boils down to statically building your .test.c files against Cest.c, and then executing the
  *  resulting binary. As an (non-functional in this project, due to Paws conventions explained in the README)
  *  example, you might run something like:
  *      
@@ -10,6 +13,7 @@
  *        Source/Paws.c/Types/list/list.tests.c && \
  *      ./list.tests.o
  *  
+ *  ### Writing
  *  Writing test files using `Cest` is very simple; simply include the `Cest.c` declarations …
  *      
  *      #include "MYCODE.c"
