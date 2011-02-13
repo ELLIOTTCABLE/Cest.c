@@ -57,6 +57,14 @@
   if (!(FACT)) \
     FAIL//;
 
+#define     ASSERT_EQUAL(THING1, THING2) ASSERT(       THING1 == THING2)//;
+#define ASSERT_NOT_EQUAL(THING1, THING2) ASSERT(       THING1 != THING2)//;
+#define  ASSERT_STREQUAL(THING1, THING2) ASSERT(strcmp(THING1 ,  THING2) == 0)//;
+
+#define ASSERT_ZERO (THING) ASSERT_EQUAL(THING, 0)//;
+#define ASSERT_NULL (THING) ASSERT_EQUAL(THING, NULL)//;
+
+
           struct cest;
 typedef   struct cest*   cest;
           struct cest_node;
