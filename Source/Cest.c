@@ -6,12 +6,16 @@
  *  ### Running
  *  Running `CEST()`s boils down to statically building your .test.c files against Cest.c, and then executing the
  *  resulting binary. As an (non-functional in this project, due to Paws conventions explained in the README)
- *  example, you might run something like:
+ *  example, you might run something like (from your project directory, itself adjacent to the Cest.c directory):
  *      
- *      C -O0 -std=c99 -pedantic-errors -Wall Source/Cest.c \
+ *      C -O0 -std=c99 -pedantic-errors -Wall ../Cest.c/Source/Cest.c \
  *        Source/Paws.c/Types/list/ll.tests.c \
  *        Source/Paws.c/Types/list/list.tests.c && \
  *      ./list.tests.o
+ *      
+ *  That example simply builds the Cest.c implementation, which includes `main()`, and then compiles your test
+ *  files statically with Cest.c into a single binary you can run. This binary registers each of your tests in
+ *  turn, and then executes `main()`, running all of said tests.
  *  
  *  ### Writing
  *  Writing test files using `Cest` is very simple; simply include the `Cest.c` declarations …
