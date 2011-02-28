@@ -128,13 +128,13 @@ struct Cest {
 
 
 #endif
-#if !defined(DECLARATIONS_PLEASE) && !defined(CEST_IMPLEMENTED) /* ====================================== BODY */
+#if !defined(DECLARATIONS) && !defined(CEST_IMPLEMENTED) /* ============================================= BODY */
 # define                                      CEST_IMPLEMENTED
-# define DECLARATIONS_PLEASE
+# define DECLARATIONS
 #   include <stdlib.h>
 #   include <stdio.h>
 #   include <string.h>
-# undef  DECLARATIONS_PLEASE
+# undef  DECLARATIONS
 
 /* A safer `strcpy()`, using `strncpy()` and `sizeof()` */
 #define STRCPY(TO, FROM) \
