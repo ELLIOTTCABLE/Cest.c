@@ -61,6 +61,8 @@
   if (!(FACT)) \
     FAIL//;
 
+#define ASSERT_NOT(FACT) ASSERT( !(FACT) )//;
+
 #define     ASSERT_EQUAL(THING1, THING2) ASSERT(         (THING1) == (THING2) )//;
 #define ASSERT_NOT_EQUAL(THING1, THING2) ASSERT(         (THING1) != (THING2) )//;
 #define  ASSERT_STREQUAL(THING1, THING2) ASSERT( strcmp( (THING1) ,  (THING2) ) == 0)//;
