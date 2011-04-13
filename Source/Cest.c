@@ -152,6 +152,7 @@ struct Cest {
 # define DECLARATIONS
 #   include <stdlib.h>
 #   include <stdio.h>
+#   include <unistd.h>
 #   include <string.h>
 # undef  DECLARATIONS
 
@@ -190,17 +191,19 @@ struct Cest Cest = {
   .first      = NULL
 };
 
-int Cest__run_all(void) {   int total, successes, pends; cest_state return_value; cest current;
-                            struct cest_node *current_node = Cest.first;
+int Cest__run_all(void) {   int total, successes, pends; cest current;
+                            struct cest_node *current_node = Cest.first, *previous_node = NULL;
   
   for (total = 0, successes = 0, pends = 0; current_node != NULL; total++, current_node = current_node->next) {
     current = current_node->cest;
-    return_value = Cest.execute(current);
-    if (return_value) { successes++; }
-    if (return_value - 1) { pends++; }
+    Cest.execute(current);
+    while ( current->state == unknown
+       &&  (usleep(250)    == 0) ) {};
+    if (current->state) { successes++; }
+    if (current->state - 1) { pends++; }
     
     printf("%s->%s%s%s()\n", current->namespace,
-      return_value ? (return_value - 1 ? ANSIEscapes.pending : ANSIEscapes.success) : ANSIEscapes.failure,
+      current->state ? (current->state - 1 ? ANSIEscapes.pending : ANSIEscapes.success) : ANSIEscapes.failure,
       current->name, ANSIEscapes.reset); }
   
   printf("%s%d successes%s (of %d)\n",
