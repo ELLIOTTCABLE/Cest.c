@@ -84,14 +84,20 @@ typedef   struct cest_node*   cest_node;
 #define SUCCEED return success//;
 #define PEND    return pending//;
 
-typedef enum cest_state { failure, success, pending } cest_state;
+typedef // »
+enum cest_state      { unknown = -1,
+                       failure = 0,
+                       success,
+                       pending } //;
+     cest_state;
 
 /*  This is the datatype utilized to store your `CEST()`s at runtime. It simply wraps a function-pointer to your
  *  `CEST()` in with the `CEST()`’s name. */
 struct cest {
-  cest_state   (* function)( void );
+  cest_state    (*function)( void );
   char            namespace[32];
   char            name[216]; /* `256 - 32 - "__test__".length == 216` */
+  cest_state      state;
 };
 
 // For now, we implement a shitty global linked-list of tests to run. Not my
@@ -221,6 +227,7 @@ cest Cest__create(char namespace[], char name[], cest_state (*function)(void)) {
          this->function     = function;
   STRCPY(this->namespace    , namespace);
   STRCPY(this->name         , name);
+         this->state        = unknown;
   
 return this; }
 
@@ -240,11 +247,8 @@ void Cest__enroll(cest a_cest) {    struct cest_node this_node = { .cest = a_ces
   
 return; }
 
-cest_state cest__execute(cest this) { return this->function(); }
-
-cest_state cest__complete(cest this, cest_state state) {
-  // UNIMP: partial commit.
-}
+cest_state cest__execute(cest this)                    { return this->function(); }
+cest_state cest__complete(cest this, cest_state state) { return this->state = state; }
 
 
 #if !defined(CEST__NO_AUTO)
