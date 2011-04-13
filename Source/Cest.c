@@ -34,10 +34,12 @@
  *        
  *        ASSERT(something);
  *        
- *      SUCCEED; }
+ *      SUCCEED; }}
  *      
  *  Ensure that you always finish a `CEST()` with the `SUCCEED;` statement. This ensures your test is marked as
- *  passing if none of the `ASSERT()`ions `FAIL`.
+ *  passing if none of the `ASSERT()`ions `FAIL`. (Important note: the `CEST()` macro includes an opening left-
+ *  bracket, which you must manually pair with a right-bracket. Generally, you wrap the `CEST` in an extra set of
+ *  brackets, in addition, to attempt to ensure that syntax hilighting tools treat it properly as a body-code.)
  */
 
 #if !defined(CEST_DECLARED)
@@ -54,7 +56,7 @@
   static cest_state NAMESPACE ## __test__ ## NAME(); \
   static /* inline */ constructor void Cest_registrar_for__ ## NAMESPACE ## __test__ ## NAME() { \
     Cest.enroll(Cest.create(#NAMESPACE, #NAME, NAMESPACE ## __test__ ## NAME)); } \
-  cest_state NAMESPACE ## __test__ ## NAME() //{ … }
+  cest_state NAMESPACE ## __test__ ## NAME() { cest _this_test = Cest.of(#NAMESPACE, #NAME); //}
 
 /*  This simple macro causes a test to `FAIL` if the passed expression returns `false`. */
 #define ASSERT(FACT) \
@@ -111,6 +113,10 @@ struct Cest {
    *  (with 0 indicating success of all tests, testable with `!()`). */
   int          (* run_all)    ( void );
   
+  /*  `>of(namespace, name)` returns a pointer to the `cest` instance on the heap for the given pairing of
+   *  `namespace` and `name`. Returns `NULL` in the case of no existing `cest` for that pairing. */
+  cest         (* of)         ( char namespace[], char name[] );
+  
   /*  `>create(namespace, name, &function)` returns a heap pointer to a new `struct cest`, initialized with
    *  copies of the parameters you provide. */
   cest         (* create)     ( char namespace[], char name[], cest_state (*function)(void) );
@@ -122,6 +128,9 @@ struct Cest {
   /*  `>execute(cest)` is simply a shortcut to `(cest->function)()`. It causes the underlying function pointer to
    *  be dereferenced and executed. */
   cest_state   (* execute)    ( cest );
+  
+  /*  `>complete(cest, state)` marks the passed `cest` instance as “completed,” with the passed state. */
+  cest_state   (* complete)   ( cest, cest_state state );
   
   // ==== Data members
   /*  The `struct cest_node` pointed to by `>first` will be the first `CEST()` to be executed when `>run_all()`
@@ -155,18 +164,22 @@ ANSIEscapes = {
 };
 
 
-int           Cest__run_all   (void);
-cest          Cest__create    (char[], char[], cest_state (*)(void));
+int           Cest__run_all     (void);
+cest          Cest__of          (char[], char[]);
+cest          Cest__create      (char[], char[], cest_state (*)(void));
 
-void          Cest__enroll    (cest);
-cest_state    cest__execute   (cest);
+void          Cest__enroll      (cest);
+cest_state    cest__execute     (cest);
+cest_state    cest__complete    (cest, cest_state);
 
 struct Cest Cest = {
   .run_all    = Cest__run_all,
+  .of         = Cest__of,
   .create     = Cest__create,
   
   .enroll     = Cest__enroll,
   .execute    = cest__execute,
+  .complete   = cest__complete,
   
   .first      = NULL
 };
@@ -189,6 +202,17 @@ int Cest__run_all(void) {   int total, successes, pends; cest_state return_value
     successes, ANSIEscapes.reset, total);
   
 return total - successes; }
+
+static // »
+cest _Cest__of(char namespace[], char name[], cest_node last_node);
+cest  Cest__of(char namespace[], char name[]) { return // »
+     _Cest__of(     namespace  ,      name  ,           Cest.first); }
+cest _Cest__of(char namespace[], char name[], cest_node last_node) { cest last = last_node->cest;
+  if( strcmp(last->namespace, namespace) == 0
+  &&  strcmp(last->name, name) == 0 ) return last;
+  if( last_node->next != NULL )       return // »
+     _Cest__of(     namespace  ,      name  ,           last_node->next);
+                                 else exit(1337); } // Serious error condition.
 
 cest Cest__create(char namespace[], char name[], cest_state (*function)(void)) {    cest this;
   
@@ -217,6 +241,10 @@ void Cest__enroll(cest a_cest) {    struct cest_node this_node = { .cest = a_ces
 return; }
 
 cest_state cest__execute(cest this) { return this->function(); }
+
+cest_state cest__complete(cest this, cest_state state) {
+  // UNIMP: partial commit.
+}
 
 
 #if !defined(CEST__NO_AUTO)
