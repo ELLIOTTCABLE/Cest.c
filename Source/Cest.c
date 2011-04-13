@@ -80,9 +80,9 @@ typedef   struct cest*   cest;
           struct cest_node;
 typedef   struct cest_node*   cest_node;
 
-#define FAIL    return failure//;
-#define SUCCEED return success//;
-#define PEND    return pending//;
+#define FAIL    return Cest.complete(_this_test, failure)//;
+#define SUCCEED return Cest.complete(_this_test, success)//;
+#define PEND    return Cest.complete(_this_test, pending)//;
 
 typedef // »
 enum cest_state      { unknown = -1,
