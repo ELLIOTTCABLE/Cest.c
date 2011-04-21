@@ -83,12 +83,14 @@ typedef   struct cest_node*   cest_node;
 #define FAIL    return Cest.complete(_this_test, failure)//;
 #define SUCCEED return Cest.complete(_this_test, success)//;
 #define PEND    return Cest.complete(_this_test, pending)//;
+#define SOMEDAY return Cest.complete(_this_test, someday)//;
 
 typedef // »
 enum cest_state      { unknown = -1,
                        failure = 0,
                        success,
-                       pending } //;
+                       pending,
+                       someday } //;
      cest_state;
 
 /*  This is the datatype utilized to store your `CEST()`s at runtime. It simply wraps a function-pointer to your
@@ -162,11 +164,12 @@ struct Cest {
 
 #define CSI "\033["
 #define SGR "m"
-static const struct { char failure[6]; char success[6]; char pending[6]; char reset[6]; }
+static const struct { char failure[6]; char success[6]; char pending[6]; char someday[6]; char reset[6]; }
 ANSIEscapes = {
   .failure    = CSI "31" SGR,
   .success    = CSI "32" SGR,
-  .pending    = CSI "33" SGR,
+  .pending    = CSI "35" SGR,
+  .someday    = CSI "33" SGR,
   .reset      = CSI "0"  SGR
 };
 
@@ -201,9 +204,16 @@ int Cest__run_all(void) {   int total, successes, pends; cest current;
        &&  (usleep(250)    == 0) ) {};
     if (current->state) { successes++; }
     if (current->state - 1) { pends++; }
+  //if (current->state - 2) { somedays++; } // We don’t really care. |:
     
     printf("%s->%s%s%s()\n", current->namespace,
-      current->state ? (current->state - 1 ? ANSIEscapes.pending : ANSIEscapes.success) : ANSIEscapes.failure,
+      current->state ?
+        (current->state - 1 ?
+          (current->state - 2 ?
+              ANSIEscapes.someday
+            : ANSIEscapes.pending)
+          : ANSIEscapes.success)
+        : ANSIEscapes.failure,
       current->name, ANSIEscapes.reset); }
   
   printf("%s%d successes%s (of %d)\n",
