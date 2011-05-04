@@ -195,7 +195,7 @@ struct Cest Cest = {
 };
 
 int Cest__run_all(void) {   int total, successes, pends; cest current;
-                            struct cest_node *current_node = Cest.first, *previous_node = NULL;
+                            struct cest_node *current_node = Cest.first;
   
   for (total = 0, successes = 0, pends = 0; current_node != NULL; total++, current_node = current_node->next) {
     current = current_node->cest;
